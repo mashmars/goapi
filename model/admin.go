@@ -1,8 +1,12 @@
-# goapi
+package model
 
-### 数据库基本操作
-#### 结构体对应实际数据库字段
-```
+import (
+	"strings"
+	"log"
+	"time"
+	"fmt"
+)
+
 type Admin struct {
 	Model
 	Id int64
@@ -15,16 +19,11 @@ type Admin struct {
 	CreatedAt time.Time `json:"created_at" time_format:"2020-02-01"`
 	LastLoginAt time.Time
 }
-```
-#### 每个model表根据需要实现基本操作方法 Find FindOneBy FindBy Insert InsertAll  Update Delete DeleteBy
-##### Tablename方法必须实现 设置对应的表名称
-```
+
 func (admin *Admin) Tablename() (string) {
 	return "admin"
 }
-```
-##### 其他基本操作方法 Find FindOneBy FindBy Insert InsertAll  Update Delete DeleteBy
-```
+
 func (admin *Admin) Find(id int) (*Admin, error) {
 	fields := admin.ConvertToDbField(admin)		
 	sql := fmt.Sprintf("select %s from %s where id = ?", strings.Join(fields, ", "), admin.Tablename())
@@ -118,73 +117,29 @@ func (admin *Admin) DeleteBy(where OrderedMap) (int64) {
 	rowsAffected, _ := result.RowsAffected()
 	return rowsAffected
 }
-```
 
 
-#### 使用方法
-##### 声明结构体
-```
-admin := &model.Admin{}
-var adminModel model.Admin
-```
-##### find 根据主键返回row
-```
-admin, _ := adminModel.Find(1)
-```
-##### 根据条件及排序查找一行或多行
-```
-var where model.OrderedMap
-var order model.OrderedMap
-where.Set("username", "admin")
-where.Set("password", "adminpassword")
-order.Set("id", "desc")
+/*
+func(admin *Admin) FindOneBy(kv map[string]string) (*Admin, error) {
+	sql := "select id, username, password, role_id, descript, is_enabled, last_login_ip, created_at, last_login_at from admin where "
+	//sql := "select * from admin where " //Scan error on column index 5, name "created_at": converting driver.Value type time.Time ("2021-02-02 00:00:00 +0000 UTC") to a int why?
+	values := []interface{}{}
+	fields := []string{}
 
-admin, _ := adminModel.FindOneBy(where, order)
-admin, _ := adminModel.FindBy(where, order)
-```
-##### 新增
-```
-data := map[string]interface{}{
-    "username": "mash2",
-    "password": "mash2",
-    "created_at": "2020-02-03",
-}
-adminModel.Insert(data)
-```
-##### 批量插入
-```
-data1 := map[string]interface{}{
-    "username": "mash33",
-    "password": "mash3",
-    "created_at": "2020-02-03",
-}
-data2 := map[string]interface{}{
-    "username": "mash44",
-    "password": "mash4",
-    "created_at": "2020-02-03",
-}
-datas := []map[string]interface{}{data1, data2}
-adminModel.InsertAll(datas)
-```
-##### 更新
-```
-data := map[string]interface{}{
-    "username": "mash1231231",
-    "password": "mash2",
-    "created_at": "2020-02-03",
-}
-where := map[string]interface{}{
-    "username": "mash2",
-}
-adminModel.Update(data, where)
-```
-##### 删除 根据主键删除数据
-```
-adminModel.Delete(11)
-```
-##### 批量删除 根据条件删除
-```
-var where model.OrderedMap
-where.Set("password", "123")
-adminModel.DeleteBy(where)
-```
+	for field, value := range kv {
+		fields = append(fields, field)
+		values = append(values, value)
+	}
+
+	sql += strings.Join(fields, " = ? and ") + " = ? limit 1";	
+	stmt, _ := Db.Prepare(sql)
+	row := stmt.QueryRow(values...)
+	//row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp)
+	var err error
+	if err = row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp, &admin.CreatedAt, &admin.LastLoginAt); err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	
+	return admin, err
+}*/
