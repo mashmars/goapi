@@ -33,8 +33,7 @@ func (admin *Admin) Find(id int) (*Admin, error) {
 	row := stmt.QueryRow(id)
 	var err error
 	if err = row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp, &admin.CreatedAt, &admin.LastLoginAt); err != nil {
-		log.Println(err)
-		return nil, err
+		panic(err)
 	}
 	
 	return admin, err
@@ -50,8 +49,7 @@ func(admin *Admin) FindOneBy(where OrderedMap, order OrderedMap) (*Admin, error)
 	//row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp)
 	var err error
 	if err = row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp, &admin.CreatedAt, &admin.LastLoginAt); err != nil {
-		log.Println(err)
-		return nil, err
+		panic(err)
 	}
 	
 	return admin, err
@@ -71,6 +69,30 @@ func (admin *Admin) FindBy(where OrderedMap, order OrderedMap) ([]Admin, error) 
 			log.Println(err)
 			return nil, err
 		}
+		admins = append(admins, adminNew)
+	}
+	
+	return admins, err
+}
+
+func (admin *Admin) FindAll() ([]Admin, error) {	
+	fields := admin.ConvertToDbField(admin)		
+	sql := fmt.Sprintf("select %s from %s ", strings.Join(fields, ", "), admin.Tablename())
+	
+	stmt, _ := Db.Prepare(sql)
+	rows, err := stmt.Query()
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	
+	var admins []Admin
+	for rows.Next() {
+		adminNew := Admin{}		
+		if err = rows.Scan(&adminNew.Id, &adminNew.Username, &adminNew.Password, &adminNew.RoleId, &adminNew.Descript, &adminNew.IsEnabled, &adminNew.LastLoginIp, &adminNew.CreatedAt, &adminNew.LastLoginAt); err != nil {
+			panic(err)
+		}
+		
 		admins = append(admins, adminNew)
 	}
 	

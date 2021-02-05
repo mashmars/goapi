@@ -2,11 +2,13 @@ package model
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"strings"
 	"unicode"
 	"reflect"
+	"time"
 )
 
 var Db *sql.DB
@@ -23,6 +25,46 @@ func init() {
 		panic("数据库连接失败")
 	}
 }
+
+//返回的时间格式转换 2021-02-02T00:00:00Z => 2021-02-02 00:00:00
+const TimeFormat = "2021-02-02 00:00:00"
+type LocalTime time.Time
+func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
+	// 空值不进行解析
+	if len(data) == 2 {
+		*t = LocalTime(time.Time{})
+		return
+	}
+  
+	// 指定解析的格式
+	now, err := time.Parse(`"`+TimeFormat+`"`, string(data))
+	*t = LocalTime(now)
+	return
+}
+func (t LocalTime) MarshalJSON() ([]byte, error) {
+    b := make([]byte, 0, len(TimeFormat)+2)
+    b = append(b, '"')
+    b = time.Time(t).AppendFormat(b, TimeFormat)
+    b = append(b, '"')
+    return b, nil
+}
+func (t LocalTime) Value() (driver.Value, error) {
+    if t.String() == "0001-01-01 00:00:00" {
+        return nil, nil
+    }
+    return []byte(time.Time(t).Format(TimeFormat)), nil
+}
+
+func (t *LocalTime) Scan(v interface{}) error {
+    tTime, _ := time.Parse("2006-01-02 15:04:05 +0800 CST", v.(time.Time).String())
+    *t = LocalTime(tTime)
+    return nil
+}
+
+func (t LocalTime) String() string {
+    return time.Time(t).Format(TimeFormat)
+}
+
 
 //为了实现有序的处理字段值
 type OrderedMap struct {
@@ -80,8 +122,9 @@ func GetFieldName(structName interface{}) []string  {
 		t = t.Elem()
 	}
 	if t.Kind() != reflect.Struct {
+		panic("Check type error not Struct")
 		log.Println("Check type error not Struct")
-		return nil
+		return nil		
 	}
 	fieldNum := t.NumField()
 	result := make([]string,0,fieldNum)
@@ -120,7 +163,7 @@ func (model *Model) Rows(sql string, where OrderedMap) (*sql.Rows, error) {
 	stmt, _ := Db.Prepare(sql)
 	rows, err := stmt.Query(where.Values...)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	defer rows.Close()
 	return rows, err
@@ -147,19 +190,21 @@ func (model *Model) Insert(data map[string]interface{}) (int64, error) {
 	var zanwei []string
 
 	for field, value := range data {
-		fields = append(fields, field)
+		fields = append(fields, CamelCaseToUdnderscore(field))
 		values = append(values, value)
 		zanwei = append(zanwei, "?")
 	}
 	
 	var sql string
 	sql += "insert into " + model.tablename + "(" + strings.Join(fields, ",") + ") values (" + strings.Join(zanwei, ",") + ")"
-
+	
 	stmt, _ := Db.Prepare(sql)
+	
 	result, err := stmt.Exec(values...)
 	if err != nil {
-		log.Println(err)		
+		panic(err)		
 	}
+	
 	lastInsertId, err := result.LastInsertId()
 	return lastInsertId, err
 }
@@ -180,11 +225,11 @@ func (model *Model) Update(data map[string]interface{}, where map[string]interfa
 	var fieldsWhere []string
 
 	for field, value := range data {
-		fields = append(fields, field)
+		fields = append(fields, CamelCaseToUdnderscore(field))
 		values = append(values, value)
 	}
 	for field, value := range where {
-		fieldsWhere = append(fieldsWhere, field)
+		fieldsWhere = append(fieldsWhere, CamelCaseToUdnderscore(field))
 		values = append(values, value)
 	}
 	
@@ -198,8 +243,24 @@ func (model *Model) Update(data map[string]interface{}, where map[string]interfa
 	stmt, _ := Db.Prepare(sql)
 	result, err := stmt.Exec(values...)
 	if err != nil {
-		log.Println(err)		
+		panic(err)		
 	}
 	rowsAffected, err := result.RowsAffected()
 	return rowsAffected, err
+}
+
+//分页
+func pagination() {
+	/*page := 1
+	pageSize := 10
+	offset := (page - 1) * pageSize + 1
+	pages := 123
+	sql := "select * from admin order id asc" /// 11 - 20
+	sql += " limit 10 10 "
+	stmt, _ := Db.Prepare(sql)
+	values := []interface{}{}
+	values = append(values, offset, pageSize)
+	
+	sql = "select count(id) from admin"
+	*/
 }
