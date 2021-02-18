@@ -159,14 +159,14 @@ func (model *Model) BuildSql(sql string, where OrderedMap, order OrderedMap) (st
 }
 
 //
-func (model *Model) Rows(sql string, where OrderedMap) (*sql.Rows, error) {
+func (model *Model) Rows(sql string, where OrderedMap) (*sql.Rows) {
 	stmt, _ := Db.Prepare(sql)
 	rows, err := stmt.Query(where.Values...)
 	if err != nil {
 		panic(err)
 	}
 	defer rows.Close()
-	return rows, err
+	return rows
 }
 
 //
@@ -183,7 +183,7 @@ func (model *Model) ConvertToDbField(structName interface{}) []string {
 
 
 //insert update insertAll
-func (model *Model) Insert(data map[string]interface{}) (int64, error) {
+func (model *Model) Insert(data map[string]interface{}) (int64) {
 	//sql := "insert into admin(username, password) values (?, ?)"
 	var values []interface{}
 	var fields []string
@@ -206,19 +206,23 @@ func (model *Model) Insert(data map[string]interface{}) (int64, error) {
 	}
 	
 	lastInsertId, err := result.LastInsertId()
-	return lastInsertId, err
+	if err != nil {
+		panic(err)
+	}
+
+	return lastInsertId
 }
 
 func (model *Model) InsertAll(datas []map[string]interface{}) ([]int64) {
 	var ids []int64
 	for _, data := range datas {
-		lastInsertId, _ := model.Insert(data)
+		lastInsertId := model.Insert(data)
 		ids = append(ids, lastInsertId)
 	}
 	return ids
 }
 
-func (model *Model) Update(data map[string]interface{}, where map[string]interface{}) (int64, error) {
+func (model *Model) Update(data map[string]interface{}, where map[string]interface{}) (int64) {
 	//update admin set username = ?, password = ? where field = ? and field = ?
 	var values []interface{}
 	var fields []string
@@ -246,7 +250,11 @@ func (model *Model) Update(data map[string]interface{}, where map[string]interfa
 		panic(err)		
 	}
 	rowsAffected, err := result.RowsAffected()
-	return rowsAffected, err
+	if err != nil {
+		panic(err)		
+	}
+
+	return rowsAffected
 }
 
 //分页

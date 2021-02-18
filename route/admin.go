@@ -10,7 +10,10 @@ func LoadAdmin(router *gin.Engine) {
 	{
 		admin.GET("/index", admincontroller.Index)	
 		admin.POST("/add", admincontroller.Add)
-		admin.POST("/edit/:id", admincontroller.Edit)
+		admin.GET("/edit/:id", admincontroller.Edit)
+		admin.POST("/edit/:id", admincontroller.EditSave)
 		admin.POST("/delete", admincontroller.Delete)
+		admin.POST("/status", admincontroller.Status)
+		admin.POST("/password", admincontroller.Password)
 	}
 }

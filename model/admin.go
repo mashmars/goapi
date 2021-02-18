@@ -2,29 +2,28 @@ package model
 
 import (
 	"strings"
-	"log"
 	"time"
 	"fmt"
 )
 
 type Admin struct {
 	Model
-	Id int64
-	Username string
-	Password string 
-	RoleId int64
-	Descript string
-	IsEnabled int
-	LastLoginIp string
-	CreatedAt time.Time `json:"created_at" time_format:"2020-02-01"`
-	LastLoginAt time.Time
+	Id int64				`json:"id"`
+	Username string			`json:"username"`
+	Password string 		`json:"password"`
+	RoleId int64			`json:"role_id"`
+	Descript string			`json:"descript"`
+	IsEnabled int			`json:"is_enabled"`
+	LastLoginIp string		`json:"last_login_ip"`
+	CreatedAt time.Time 	`json:"created_at" time_format:"2020-02-01"`
+	LastLoginAt time.Time	`json:"last_login_at"`
 }
 
 func (admin *Admin) Tablename() (string) {
 	return "admin"
 }
 
-func (admin *Admin) Find(id int) (*Admin, error) {
+func (admin *Admin) Find(id int) (*Admin) {
 	fields := admin.ConvertToDbField(admin)		
 	sql := fmt.Sprintf("select %s from %s where id = ?", strings.Join(fields, ", "), admin.Tablename())
 	//sql := "select * from admin where " //Scan error on column index 5, name "created_at": converting driver.Value type time.Time ("2021-02-02 00:00:00 +0000 UTC") to a int why?
@@ -36,10 +35,10 @@ func (admin *Admin) Find(id int) (*Admin, error) {
 		panic(err)
 	}
 	
-	return admin, err
+	return admin
 }
 
-func(admin *Admin) FindOneBy(where OrderedMap, order OrderedMap) (*Admin, error) {	
+func(admin *Admin) FindOneBy(where OrderedMap, order OrderedMap) (*Admin) {	
 	fields := admin.ConvertToDbField(admin)		
 	sql := fmt.Sprintf("select %s from %s ", strings.Join(fields, ", "), admin.Tablename())
 	sql = admin.BuildSql(sql, where, order) + " limit 1"
@@ -52,30 +51,29 @@ func(admin *Admin) FindOneBy(where OrderedMap, order OrderedMap) (*Admin, error)
 		panic(err)
 	}
 	
-	return admin, err
+	return admin
 }
 
-func (admin *Admin) FindBy(where OrderedMap, order OrderedMap) ([]Admin, error) {	
+func (admin *Admin) FindBy(where OrderedMap, order OrderedMap) ([]Admin) {	
 	fields := admin.ConvertToDbField(admin)		
 	sql := fmt.Sprintf("select %s from %s ", strings.Join(fields, ", "), admin.Tablename())
 	sql = admin.BuildSql(sql, where, order)
 
-	rows, err := admin.Rows(sql, where)
+	rows := admin.Rows(sql, where)
 	
 	var admins []Admin
 	for rows.Next() {
 		adminNew := Admin{}		
-		if err = rows.Scan(&adminNew.Id, &adminNew.Username, &adminNew.Password, &adminNew.RoleId, &adminNew.Descript, &adminNew.IsEnabled, &adminNew.LastLoginIp, &adminNew.CreatedAt, &adminNew.LastLoginAt); err != nil {
-			log.Println(err)
-			return nil, err
+		if err := rows.Scan(&adminNew.Id, &adminNew.Username, &adminNew.Password, &adminNew.RoleId, &adminNew.Descript, &adminNew.IsEnabled, &adminNew.LastLoginIp, &adminNew.CreatedAt, &adminNew.LastLoginAt); err != nil {
+			panic(err)
 		}
 		admins = append(admins, adminNew)
 	}
 	
-	return admins, err
+	return admins
 }
 
-func (admin *Admin) FindAll() ([]Admin, error) {	
+func (admin *Admin) FindAll() ([]Admin) {	
 	fields := admin.ConvertToDbField(admin)		
 	sql := fmt.Sprintf("select %s from %s ", strings.Join(fields, ", "), admin.Tablename())
 	
@@ -96,24 +94,24 @@ func (admin *Admin) FindAll() ([]Admin, error) {
 		admins = append(admins, adminNew)
 	}
 	
-	return admins, err
+	return admins
 }
 
 ////
-func (admin *Admin) Insert(data map[string]interface{}) (int64, error) {
+func (admin *Admin) Insert(data map[string]interface{}) (int64) {
 	admin.SetTablename(admin.Tablename())
-	lastInsertId, err := admin.Model.Insert(data)
-	return lastInsertId, err
+	lastInsertId := admin.Model.Insert(data)
+	return lastInsertId
 }
 func (admin *Admin) InsertAll(datas []map[string]interface{}) ([]int64) {
 	admin.SetTablename(admin.Tablename())
 	ids := admin.Model.InsertAll(datas)
 	return ids
 }
-func (admin *Admin) Update(data map[string]interface{}, where map[string]interface{}) (int64, error) {	
+func (admin *Admin) Update(data map[string]interface{}, where map[string]interface{}) (int64) {	
 	admin.SetTablename(admin.Tablename())
-	rowsAffected, err := admin.Model.Update(data, where)
-	return rowsAffected, err
+	rowsAffected := admin.Model.Update(data, where)
+	return rowsAffected
 }
 
 //

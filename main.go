@@ -28,12 +28,19 @@ func main() {
 	
 	router := gin.Default()
 	//解决跨域请求
-	router.Use(cors.Default())
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true //允许所有域名
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS"}//允许请求的方法
+	//allowheaders需要设置上 Access-Control-Allow-Origin 
+	config.AllowHeaders = []string{"tus-resumable", "upload-length", "upload-metadata", "cache-control", "x-requested-with", "*", "Access-Control-Allow-Origin"}//允许的Header
+	router.Use(cors.New(config))
+	//router.Use(cors.Default())
 	router.Use(ErrHandler())
 
 	//注册路由
 	route.LoadSecurity(router)
 	route.LoadAdmin(router)
+	route.LoadAdminRole(router)
 
 	router.Run()
 }
