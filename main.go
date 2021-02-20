@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
 	"api/route"
+	"api/model"
 	"fmt"
 )
 
@@ -41,6 +42,34 @@ func main() {
 	route.LoadSecurity(router)
 	route.LoadAdmin(router)
 	route.LoadAdminRole(router)
+	route.LoadAdminMenu(router)
+	route.LoadAdminAction(router)
+	route.LoadAdminActionApi(router)
+
+	//按需启用
+	//collectRoutes(router)
 
 	router.Run()
+}
+
+
+//按需启用
+func collectRoutes(router *gin.Engine) {	
+	//存在不更新
+	for _, routerInfo := range router.Routes() {
+		adminActionApi := model.AdminActionApi{}
+		model.ORM.Where("method = ? and path = ? ", routerInfo.Method, routerInfo.Path).First(&adminActionApi)
+		if adminActionApi.ID != 0 {
+			continue
+		} else {
+			adminActionApi.Method = routerInfo.Method
+			adminActionApi.Path = routerInfo.Path
+			adminActionApi.ControllerAction = routerInfo.Handler
+			adminActionApi.SortedBy = 100
+			adminActionApi.IsEnabled = 1
+			if result := model.ORM.Create(&adminActionApi); result.Error != nil {
+				panic(result.Error)
+			}
+		}
+	}
 }

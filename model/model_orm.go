@@ -28,4 +28,15 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	//
+	migrate()	
+}
+
+
+func migrate() {
+	//ORM.AutoMigrate(&AdminMenu{})
+	//ORM.AutoMigrate(&AdminAction{})
+	//ORM.AutoMigrate(&AdminActionApi{})
+
 }

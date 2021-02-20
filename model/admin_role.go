@@ -1,42 +1,24 @@
 package model
 
 import (
-	"fmt"
-	"strings"
+	"gorm.io/gorm"
+	"errors"
 )
 
 type AdminRole struct {
-	Model
-	Id int64			`json:"id"`
-	Name string			`json:"name"`
-	IsEnabled int		`json:"is_enabled"`
+	ID uint			`json:"id"`
+	Name string		`json:"name" form:"name" binding:"required"`
+	IsEnabled int	`json:"is_enabled" form:"is_enabled"`
 }
 
-
-func (admin_role *AdminRole) Tablename() string {
+func (adminRole *AdminRole) TableName() string {
 	return "admin_role"
 }
 
-func (admin_role *AdminRole) FindAll() ([]AdminRole) {
-	fields := admin_role.ConvertToDbField(admin_role)
-	sql := fmt.Sprintf("select %s from %s ", strings.Join(fields, ", "), admin_role.Tablename())
 
-	stmt, _ := Db.Prepare(sql)
-	rows, err := stmt.Query()
-	if err != nil {
-		panic(err)
+func (adminRole *AdminRole) BeforeDelete(tx *gorm.DB) (err error) {
+	if adminRole.ID == 1 || adminRole.Name == "超级管理员" {
+		panic(errors.New("超级管理员角色不能删除"))
 	}
-	defer rows.Close()
-
-	var adminRoles []AdminRole
-	for rows.Next() {
-		adminRole := AdminRole{}
-		if err = rows.Scan(&adminRole.Id, &adminRole.Name, &adminRole.IsEnabled); err != nil {
-			panic(err)
-		}
-
-		adminRoles = append(adminRoles, adminRole)
-	}
-
-	return adminRoles
+	return
 }
