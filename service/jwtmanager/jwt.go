@@ -3,6 +3,8 @@ package jwtmanager
 import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"strings"
+	"errors"
 )
 
 
@@ -17,9 +19,14 @@ func CreateJwtToken(claims map[string]interface{}) (tokenString string, err erro
 }
 
 
-func ParseJwtTOken(tokenString string) (claims map[string]interface{}, err error) {
+func ParseJwtToken(tokenString string) (claims map[string]interface{}, err error) {
+	if tokens := strings.Split(tokenString, "."); len(tokens) != 3 {
+		return map[string]interface{}{}, errors.New("token格式不正确")
+	}
+	
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte("jwt security key string"), nil

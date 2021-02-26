@@ -9,6 +9,7 @@ type AdminActionApi struct {
 	SortedBy int				`json:"sorted_by" form:"sorted_by" gorm:"default:100;type:smallint"`
 	ControllerAction string		`json:"controller_action" form:"controller_action" gorm:"size:150;"`
 	IsEnabled int				`json:"is_enabled" form:"is_enabled" gorm:"type:tinyint;"`
+	
 }
 
 

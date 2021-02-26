@@ -5,7 +5,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"api/route"
 	"api/model"
-	"fmt"
+	"api/middleware/jwtmiddleware"
 )
 
 
@@ -15,7 +15,7 @@ func ErrHandler() gin.HandlerFunc  {
 			if err := recover(); err != nil {
 				ctx.JSON(200, gin.H{
 					"code": 1,
-					"msg" : fmt.Sprintf("%v", err),
+					"msg" : err.(string),//fmt.Sprintf("%v", err),
 				})
 				return
 			}
@@ -38,6 +38,9 @@ func main() {
 	//router.Use(cors.Default())
 	router.Use(ErrHandler())
 
+	router.Use(jwtmiddleware.JwtGuard())
+	router.Use(jwtmiddleware.ApiGuard())
+
 	//注册路由
 	route.LoadSecurity(router)
 	route.LoadAdmin(router)
@@ -45,6 +48,16 @@ func main() {
 	route.LoadAdminMenu(router)
 	route.LoadAdminAction(router)
 	route.LoadAdminActionApi(router)
+	route.LoadAdminRoleRbac(router)
+
+	router.GET("/api/admin", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
+			"code": 0,
+			"msg" : "success",
+			"data": "",
+		})
+	})
+	
 
 	//按需启用
 	//collectRoutes(router)

@@ -38,5 +38,5 @@ func migrate() {
 	//ORM.AutoMigrate(&AdminMenu{})
 	//ORM.AutoMigrate(&AdminAction{})
 	//ORM.AutoMigrate(&AdminActionApi{})
-
+	//ORM.AutoMigrate(&AdminRoleMenu{}, &AdminRoleAction{}, &AdminRoleActionApi{})
 }

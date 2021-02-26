@@ -6,7 +6,7 @@ import (
 )
 
 type AdminRole struct {
-	ID uint			`json:"id"`
+	ID int			`json:"id"`
 	Name string		`json:"name" form:"name" binding:"required"`
 	IsEnabled int	`json:"is_enabled" form:"is_enabled"`
 }

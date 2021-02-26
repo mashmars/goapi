@@ -23,6 +23,7 @@ func Index(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	log.Println(page)
 	var adminModel model.Admin
+	
 	admins := adminModel.FindAll()
 	
 	ctx.JSON(200, gin.H{
