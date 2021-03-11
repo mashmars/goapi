@@ -48,7 +48,7 @@ func(admin *Admin) FindOneBy(where OrderedMap, order OrderedMap) (*Admin) {
 	//row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp)
 	var err error
 	if err = row.Scan(&admin.Id, &admin.Username, &admin.Password, &admin.RoleId, &admin.Descript, &admin.IsEnabled, &admin.LastLoginIp, &admin.CreatedAt, &admin.LastLoginAt); err != nil {
-		panic(err)
+		panic(fmt.Sprintf("%v", err))
 	}
 	
 	return admin

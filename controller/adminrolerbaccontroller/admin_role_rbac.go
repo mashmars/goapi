@@ -4,6 +4,7 @@ import (
 	"api/model"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"encoding/json"
 )
 
 
@@ -105,6 +106,76 @@ func RbacSet(ctx *gin.Context) {
 				roleActionApis = append(roleActionApis, roleActionApi)
 			}			
 		}
+	}
+
+	model.ORM.Create(&roleMenus)
+	model.ORM.Create(&roleActions)
+	model.ORM.Create(&roleActionApis)
+	
+	ctx.JSON(200, gin.H{
+		"code": 0,
+		"msg" : "success",
+		"data": "",
+	})
+}
+
+
+//
+func RbacSetReact(ctx *gin.Context) {
+	role_id := ctx.Param("id")
+	var adminRole model.AdminRole
+	model.ORM.Find(&adminRole, role_id)
+
+	//霸道一点处理 直接清空
+	model.ORM.Where("role_id = ?", role_id).Delete(&model.AdminRoleMenu{})
+	model.ORM.Where("role_id = ?", role_id).Delete(&model.AdminRoleAction{})
+	model.ORM.Where("role_id = ?", role_id).Delete(&model.AdminRoleActionApi{})
+	//加新的
+	type PostData struct {
+		Menus []int
+		Actions []int
+		Apis []int
+	}
+
+	rawData,_ := ctx.GetRawData()
+	var postData PostData
+	if err := json.Unmarshal(rawData, &postData); err != nil {
+		ctx.JSON(200, gin.H{
+			"code": 1,
+			"msg" : err,
+			"data": "",
+		})
+		return
+	}	
+
+	roleMenu := model.AdminRoleMenu{}
+	roleMenus := []model.AdminRoleMenu{}
+
+	roleActions := []model.AdminRoleAction{}
+	roleActionApis := []model.AdminRoleActionApi{}
+
+	roleAction := model.AdminRoleAction{}
+	roleActionApi := model.AdminRoleActionApi{}
+
+	for _, menu_id := range postData.Menus {
+		roleMenu.RoleId, _ = strconv.Atoi(role_id)
+		roleMenu.MenuId = menu_id
+		roleMenus = append(roleMenus, roleMenu)
+	}
+
+	for _, action_id := range postData.Actions {
+		roleAction.RoleId, _ = strconv.Atoi(role_id)
+		roleAction.ActionId = action_id
+		roleActions = append(roleActions, roleAction)
+	}
+
+	for _, api_id := range postData.Apis {
+		roleActionApi.RoleId, _ = strconv.Atoi(role_id)
+		actionApi := model.AdminActionApi{}
+		model.ORM.Find(&actionApi, api_id)
+		roleActionApi.ActionId = actionApi.ActionId
+		roleActionApi.ApiId = api_id
+		roleActionApis = append(roleActionApis, roleActionApi)
 	}
 
 	model.ORM.Create(&roleMenus)

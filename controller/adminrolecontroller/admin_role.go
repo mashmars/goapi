@@ -65,7 +65,7 @@ func EditSave(ctx *gin.Context) {
 		panic(err)
 	}
 
-	if result := model.ORM.Updates(&adminRole); result.Error != nil {
+	if result := model.ORM.Model(&adminRole).Select("*").Omit("ID").Updates(adminRole); result.Error != nil {
 		panic(result.Error)
 	}
 	ctx.JSON(200, gin.H{

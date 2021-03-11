@@ -8,7 +8,8 @@ import (
 var ORM *gorm.DB
 
 func init() {
-	dsn := "root:mash@tcp(127.0.0.1:3306)/sfadmin?charset=utf8mb4&parseTime=True&loc=Local"
+	//dsn := "root:mash@tcp(127.0.0.1:3306)/sfadmin?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:mash@tcp(127.0.0.1:3306)/reactadmin?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	ORM, err = gorm.Open(mysql.New(mysql.Config{
 		DSN: dsn, // DSN data source name

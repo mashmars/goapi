@@ -20,7 +20,8 @@ type Model struct{
 
 func init() {
 	var err error
-	Db, err = sql.Open("mysql", "root:mash@tcp(127.0.0.1)/sfadmin?parseTime=true")
+	//Db, err = sql.Open("mysql", "root:mash@tcp(127.0.0.1)/sfadmin?parseTime=true")
+	Db, err = sql.Open("mysql", "root:mash@tcp(127.0.0.1)/reactadmin?parseTime=true")
 	if err != nil {
 		panic("数据库连接失败")
 	}

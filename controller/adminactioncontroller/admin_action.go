@@ -2,6 +2,8 @@ package adminactioncontroller
 
 import (
 	"api/model"
+	"encoding/json"
+	"strconv"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +21,8 @@ func Add(ctx *gin.Context) {
 	var adminAction model.AdminAction
 	if err := ctx.ShouldBind(&adminAction); err != nil {
 		panic(err)
-	}
+	}	
+
 	if result := model.ORM.Create(&adminAction); result.Error != nil {
 		panic(result.Error)
 	}
@@ -87,7 +90,27 @@ func Delete(ctx *gin.Context) {
 
 func SetActionMenu(ctx *gin.Context) {
 	menu_id := ctx.PostForm("menu")
-	action_ids := ctx.PostFormArray("ids[]")
+	action_ids := ctx.PostFormArray("ids[]") //usestage html form.serialize 
+	if len(action_ids) == 0 { //react js axios data
+		data, _ := ctx.GetRawData()
+		type PostData struct {
+			Menu string
+			Ids []int
+		}
+		var postData PostData
+		if err := json.Unmarshal(data, &postData); err != nil {
+			ctx.JSON(200, gin.H{
+				"code": 1,
+				"msg" : err,
+				"data": "",
+			})
+			return
+		}
+		for _, id := range postData.Ids {
+			action_ids = append(action_ids, strconv.Itoa(id))
+		}		
+		menu_id = postData.Menu
+	}
 	
 	model.ORM.Model(&model.AdminAction{}).Where("id in ?", action_ids).Update("menu_id", menu_id)
 

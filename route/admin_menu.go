@@ -14,4 +14,5 @@ func LoadAdminMenu(router *gin.Engine) {
 	router.POST("/api/admin/menu/status", adminmenucontroller.Status)
 	router.POST("/api/admin/menu/delete", adminmenucontroller.Delete)
 	router.GET("/api/admin/menu/action/:id", adminmenucontroller.MenuAction)
+	router.POST("/api/admin/menu/check", adminmenucontroller.Check) //react admin使用
 }
