@@ -11,6 +11,7 @@ var fullPaths map[string]interface{}
 func init() {
 	fullPaths = map[string]interface{}{}
 	fullPaths["/api/admin/login"] = "api/admin/login"
+	fullPaths["/api/admin/menu/check"] = "api/admin/menu/check"
 }
 
 func JwtGuard() gin.HandlerFunc {
