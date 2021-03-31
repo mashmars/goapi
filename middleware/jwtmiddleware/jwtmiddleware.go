@@ -51,7 +51,7 @@ func ApiGuard() gin.HandlerFunc {
 			return
 		}
 		username := ctx.MustGet("username")
-		var admin model.Admin1
+		var admin model.Admin
 		model.ORM.Where("username = ?", username).Find(&admin)
 		var api model.AdminActionApi
 		model.ORM.Where("method = ? and path = ?", ctx.Request.Method, ctx.FullPath()).Find(&api)

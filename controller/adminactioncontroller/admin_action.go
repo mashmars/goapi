@@ -5,15 +5,26 @@ import (
 	"encoding/json"
 	"strconv"
 	"github.com/gin-gonic/gin"
+	"math"
 )
 
 func Index(ctx *gin.Context) {
 	var adminActions []model.AdminAction
-	model.ORM.Where("is_sub_menu = 1").Find(&adminActions)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"));
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))	
+
+	offset := (page - 1) * pageSize
+	var count int64
+	model.ORM.Model(&model.AdminAction{}).Where("is_sub_menu = 1").Count(&count)
+	pages := math.Ceil(float64(count)/float64(pageSize))
+
+	model.ORM.Where("is_sub_menu = 1").Select("admin_action.*, admin_menu.name as menu_name").Joins("left join admin_menu on admin_menu.id = admin_action.menu_id").Limit(pageSize).Offset(offset).Find(&adminActions)
+	
 	ctx.JSON(200, gin.H{
 		"code": 0,
 		"msg" : "success",
 		"data": adminActions,
+		"totalPage": pages,
 	})
 }
 

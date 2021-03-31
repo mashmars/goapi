@@ -9,7 +9,7 @@ import (
 )
 
 func Login(ctx *gin.Context) {
-	var adminModel model.Admin
+	var admin model.Admin
 	username := ctx.PostForm("username")
 	password := ctx.PostForm("password")
 
@@ -40,10 +40,9 @@ func Login(ctx *gin.Context) {
 		})
 		return
 	}
-	//find 根据主键返回row
-	where := model.OrderedMap{}
-	where.Set("username", username)
-	admin := adminModel.FindOneBy(where, model.OrderedMap{})
+	
+	
+	model.ORM.Where("username = ?", username).Find(&admin)
 
 	if match := argon2idencoder.ComparePasswords(password, admin.Password); !match {
 		ctx.JSON(200, gin.H{

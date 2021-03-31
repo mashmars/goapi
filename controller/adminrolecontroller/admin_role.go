@@ -5,11 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"gorm.io/gorm"
+	"strconv"
+	"math"
 )
 
 func All(ctx *gin.Context) {
-	var adminRole model.AdminRole1
-	adminRoles := adminRole.FindAll()
+	var adminRoles []model.AdminRole
+	model.ORM.Find(&adminRoles)
 	ctx.JSON(200, gin.H{
 		"code": 0,
 		"msg" : "success",
@@ -20,13 +22,32 @@ func All(ctx *gin.Context) {
 
 func Index(ctx *gin.Context) {
 	var adminRoles []model.AdminRole
-	if result := model.ORM.Find(&adminRoles); result.Error != nil {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"));
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
+
+	type QueryForm struct {
+		Name string `form:"name"`
+		IsEnabled string `form:"is_enabled"`
+	}
+
+	var queryForm QueryForm
+	if ctx.ShouldBindQuery(&queryForm) != nil {
+		panic("请求参数绑定失败")
+	}	
+
+	offset := (page - 1) * pageSize
+	var count int64
+	model.ORM.Model(&model.AdminRole{}).Where(queryForm).Count(&count)
+	pages := math.Ceil(float64(count)/float64(pageSize))
+
+	if result := model.ORM.Where(queryForm).Limit(pageSize).Offset(offset).Find(&adminRoles); result.Error != nil {
 		panic(result.Error)
 	}
 	ctx.JSON(200, gin.H{
 		"code": 0,
 		"msg" : "success",
 		"data": adminRoles,
+		"totalPage": pages,
 	})
 }
 

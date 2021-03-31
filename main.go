@@ -6,6 +6,7 @@ import (
 	"api/route"
 	"api/model"
 	"api/middleware/jwtmiddleware"
+	"fmt"
 )
 
 
@@ -15,7 +16,7 @@ func ErrHandler() gin.HandlerFunc  {
 			if err := recover(); err != nil {
 				ctx.JSON(200, gin.H{
 					"code": 1,
-					"msg" : err.(string),//fmt.Sprintf("%v", err),
+					"msg" : fmt.Sprintf("%v", err), //err.(string),//
 				})
 				return
 			}

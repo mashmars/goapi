@@ -4,15 +4,27 @@ import (
 	"api/model"
 	"github.com/gin-gonic/gin"
 	"encoding/json"
+	"strconv"
+	"math"
 )
 
 func Index(ctx *gin.Context) {
 	var adminMenus []model.AdminMenu
-	model.ORM.Find(&adminMenus)
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"));
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))	
+
+	offset := (page - 1) * pageSize
+	var count int64
+	model.ORM.Model(&model.AdminMenu{}).Count(&count)
+	pages := math.Ceil(float64(count)/float64(pageSize))
+
+	model.ORM.Limit(pageSize).Offset(offset).Find(&adminMenus)
+	
 	ctx.JSON(200, gin.H{
 		"code": 0,
 		"msg" : "success",
 		"data": adminMenus,
+		"totalPage": pages,
 	})
 }
 
