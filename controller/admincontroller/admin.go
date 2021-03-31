@@ -25,6 +25,7 @@ func Index(ctx *gin.Context) {
 		"msg" : "success",
 		"data": admins,
 		"totalPage": pages,
+		"count": count,
 	})
 }
 
