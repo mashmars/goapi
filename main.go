@@ -61,7 +61,7 @@ func main() {
 	
 
 	//按需启用
-	//collectRoutes(router)
+	collectRoutes(router)
 
 	router.Run()
 }

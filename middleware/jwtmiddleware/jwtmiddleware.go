@@ -58,7 +58,7 @@ func ApiGuard() gin.HandlerFunc {
 		model.ORM.Where("method = ? and path = ?", ctx.Request.Method, ctx.FullPath()).Find(&api)
 		var roleApi model.AdminRoleActionApi
 		model.ORM.Where("role_id = ? and api_id = ?", admin.RoleId, api.ID).First(&roleApi)
-		if roleApi.ID == 0 { //or errors.Is(, ErrResultNotFound)
+		if roleApi.ID == 0 && admin.Id != 1 { //or errors.Is(, ErrResultNotFound)
 			ctx.AbortWithStatusJSON(200, gin.H{
 				"code": 1,
 				"msg" : "没有api访问权限",
